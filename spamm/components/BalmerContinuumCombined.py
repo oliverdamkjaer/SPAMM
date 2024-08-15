@@ -51,8 +51,6 @@ class BalmerCombined(Component):
         self.name = "Balmer"
         self.coeff = pickle.load(open('../data/SH95recombcoeff/coeff.interpers.pickle','rb'), encoding="latin1")
 
-        #
-
         # parameters for the continuum
         self.model_parameter_names.append("bc_norm")
         self.model_parameter_names.append("bc_Te")
@@ -362,39 +360,51 @@ class BalmerCombined(Component):
 
             The model is defined as follows:
 
-            F(lam) = Sum_i=2^400 G_i(3646), for lam > 3646 Å
-                   = F_G82(lam), for lam ≤ 3646 Å
+            .. math::
+                F(\\lambda) =
+                \\begin{cases}
+                    \\sum_{i=2}^{400} G_i(\\lambda) & \\lambda > 3646 \\, \\text{Å} \\\\
+                    F_{\\text{G82}}(\\lambda) & \\lambda \\leq 3646 \\, \\text{Å}
+                \\end{cases}
+
 
             where:
-            - F(lam) is the flux at wavelength lam.
-            - G_i(lam) is the Gaussian function for the i-th line.
-            - F_G82(lam) is the flux at wavelength lam according to the Grandi et al. (1982) model.
 
-            F_G82(lam) = F_BaC * B_lam(T_e) * (1 - e^-tau(lam)), for lam <= 3646 Å
+            * :math:`F(\\lambda)` is the flux at wavelength :math:`\\lambda`.
+            * :math:`G_i(\\lambda)` is the Gaussian function for the :math:`i`-th line.
+            * :math:`F_{\\text{G82}}(\\lambda)` is the flux at wavelength :math:`\\lambda` according to the Grandi et al. (1982) model.
 
-            where:
-            - F_BaC is the estimate of the Balmer continuum flux at the Balmer edge.
-            - B_lam(T_e) is the Planck function at the electron temperature T_e.
-            - tau(lam) is the optical depth at wavelength lam.
-
-            The optical depth tau(lam) is defined as:
-
-            tau(lam) = tau_BE * (lam_BE / lam)^-3
+            .. math::
+                F_{\\text{G82}}(\\lambda) = F_{\\text{BaC}} \\times B_{\\lambda}(T_e) \\times (1 - e^{-\\tau_{\\lambda}}), \\lambda \\leq 3646 Å
 
             where:
-            - tau_BE is the optical depth at the Balmer edge lambda = 3646 Å.
-            - lam_BE = 3646 Å is the wavelength of the Balmer edge.
 
-            The Balmer continuum flux F_BaC is estimated as:
+            * :math:`F_{\\text{BaC}}` is the estimate of the Balmer continuum flux at the Balmer edge.
+            * :math:`B_{\\lambda}(T_e)` is the Planck function at the electron temperature :math:`T_e`.
+            * :math:`\\tau_{\\lambda}` is the optical depth at wavelength :math:`\\lambda`.
 
-            F_BaC = Sum_i=6^400 G_i(3646) / F_G82(3646)
+            The optical depth :math:`\\tau_{\\lambda}` is defined as:
+
+            .. math::
+                \\tau_{\\lambda} = \\tau_{\\text{BE}} \\left( \\frac{\\lambda_{\\text{BE}}}{\\lambda} \\right)^{-3}
 
             where:
-            - G_i(lam) = I_i * e^-[ (lam - lam_i - d*lam_i) / W_D ]^2 is the Gaussian function for the i-th line.
-            - I_i is the relative intensity.
-            - lam_i is the central wavelength.
-            - d is the shift of the Gaussian relative to lam_i (d = Delta_lam/lam_i).
-            - W_D is the Doppler width.
+
+            * :math:`\\tau_{\\text{BE}}` is the optical depth at the Balmer edge.
+            * :math:`\\lambda_{\\text{BE}} = 3646` Å is the wavelength at the Balmer edge.
+
+            The Balmer continuum flux :math:`F_{\\text{BaC}}` is estimated as:
+
+            .. math::
+                F_{\\text{BaC}} = \\frac{\\sum_{i=6}^{400} G_i(3646)}{F_{\\text{G82}}(3646)}
+
+            where:
+            
+            * :math:`G_i(\\lambda) = I_i \\times e^-[ (\\lambda - \\lambda_i - d\\lambda_i) / W_D ]^2` is the Gaussian function for the i-th line.
+            * :math:`I_i` is the relative intensity.
+            * :math:`\\lambda_i` is the central wavelength.
+            * :math:`d` is the shift of the Gaussian relative to :math:`\\lambda_i` (:math:`d = \\Delta_{\\lambda} / \\lambda_i`).
+            * :math:`W_D` is the Doppler width.
 
             Args:
                 spectrum (Spectrum, optional): The spectrum for which to estimate the flux. 
@@ -412,21 +422,13 @@ class BalmerCombined(Component):
                 Planck function is normalized at 3646 Å, so that F_BaC
                 actually represents the flux at this wavelength.
 
-            Parameters:
-                F_BaC    : The flux normalization at the Balmer Edge lambda = 3646 Å (erg cm-2 s-1 AA-1)
-                T_e      : The electron temperature T_e for the Planck function (K)
-                tau_BE   : The optical depth at the Balmer edge
-                d        : A shift of the line centroids (km/s)
-                W_D      : The width of the Gaussians (km/s)
-                log(n_e) : Logarithm of the electron density
-
             Priors:
-                F_BaC    : Flat between 0 and the maximum flux
-                T_e      : Flat between 5000 and 20000 Kelvin
-                tau_BE   : Flat between 0.1 and 2.0
-                d        : Determined from H_beta, if applicable
-                W_D      : Determined from H_beta, if applicable
-                log(n_e) : Flat between 2 and 9
+                * F_BaC    : Flat between 0 and the maximum flux
+                * T_e      : Flat between 5000 and 20000 Kelvin
+                * tau_BE   : Flat between 0.1 and 2.0
+                * d        : Determined from H_beta, if applicable
+                * W_D      : Determined from H_beta, if applicable
+                * log(n_e) : Flat between 2 and 9
             """
             wave = spectrum.spectral_axis
 

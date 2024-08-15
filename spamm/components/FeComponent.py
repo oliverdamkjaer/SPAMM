@@ -28,19 +28,25 @@ class FeComponent(Component):
     """
     Fe II and III pseudo-continuum of blended emission lines.
 
-    We will use a linear combination of N broadened and scaled iron templates:
-    $F_{\lambda,\,{\rm Fe}} = \sum_{i=1}^N F_{{\rm Fe},\,0,\,i} FeTemplate_{\lambda,\,i}(\sigma_i)$
-    where $FeTemplate_{\lambda,\,i}$ is iron template $i$ at wavelength $\lambda$,
-    $F_{{\rm Fe},\,0,\,i}$ is the template normalization, and $\simga_i$ is the width
-    of the broadening kernal.
+    We will use a linear combination of :math:`N` broadened and scaled iron templates:
+
+    .. math::
+
+        F_{\\lambda,{\\rm Fe}} = \\sum_{i=1}^N F_{{\\rm Fe},0,i} \\text{FeTemplate}_{\\lambda,i}(\\sigma_i)
+
+    where :math:`\\text{FeTemplate}_{\\lambda,i}` is iron template :math:`i` at wavelength :math:`\\lambda`,
+    :math:`F_{{\\rm Fe},0,i}` is the template normalization, and :math:`\\sigma_i` is the width
+    of the broadening kernel.
 
     This component has 2 kinds of parameters:
-        - template normalization for each template
-        - FWHM of iron lines being tested for the templates (in units of km/s)
+
+    1. Template normalization for each template
+    2. FWHM of iron lines being tested for the templates (in units of km/s)
 
     Parameters by number
-    0-(i-1): normalizations of templates 1-i
-    i-(2i-1): FWHM of the lines in templates 1 - i
+
+    * 0-(i-1): normalizations of templates 1-i
+    * i-(2i-1): FWHM of the lines in templates 1-i
 
     Attributes:
         ...
@@ -50,7 +56,7 @@ class FeComponent(Component):
         super(FeComponent, self).__init__()
 
         if pars is None:
-            self.inputpars = parse_pars()["fe_forest"]
+            self.inputpars = parse_pars()["fe_component"]
         else:
             self.inputpars = pars
         

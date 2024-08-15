@@ -32,20 +32,18 @@ class HostGalaxyComponent(Component):
 
     Represents the host galaxy's flux in a spectral model, defined by:
 
-        F_{λ, Host} = Σ_{i=1}^{N} F_{Host,i} * HostTempl_{λ,i}(σ_*)
+    .. math::
+        F_{\\lambda, \\text{Host}} = \\sum_{i=1}^{N} F_{\\text{Host},i} \\times \\text{HostTempl}_{\\lambda,i}(\\sigma_*)
 
     This component has N templates and N+1 parameters:
-    - F_{Host,i}: The normalization for each of the N templates.
-    - σ_*: The stellar line dispersion.
+
+    * :math:`F_{\\text{Host},i}`: The normalization for each of the N templates.
+    * :math:`\\sigma_*`: The stellar line dispersion.
 
     Attributes:
         host_gal (list): Spectrum objects for each template.
         interp_host (list): Interpolated host galaxy spectra.
         interp_norm_flux (list): Interpolated normalized fluxes.
-#TODO should name be in Component?
-        name (str): Component name, e.g., "Nuclear".
-        norm_min/max: Min/max allowed values for normalization.
-        stellar_disp_min/max: Min/max allowed values for stellar line dispersion.
     """
 
     def __init__(self, pars=None):

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 # Set OMP_NUM_THREADS=1 to prevent NumPy's automatic parallelization
 # which can interfere with emcee's parallelization. Recommended in emcee's documentation.
@@ -14,20 +12,17 @@ import timeit
 
 from utils.parse_pars import parse_pars
 from utils.mask_utils import bool_mask
-from spamm.analysis import make_plots_from_pickle
 from spamm.Spectrum import Spectrum
 from spamm.Model import Model
-from spamm.components.PowerLawComponent import NuclearContinuumComponent
+from spamm.components.PowerLawComponent import PowerLawComponent
 from spamm.components.HostGalaxyComponent import HostGalaxyComponent
 from spamm.components.FeComponent import FeComponent
 from spamm.components.BalmerContinuumCombined import BalmerCombined
-from spamm.components.NarrowComponent import NarrowComponent
+from spamm.components.EmissionComponent import EmissionComponent
 #from spamm.components.ReddeningLaw import Extinction
 
 # List of accepted component names for the model
-ACCEPTED_COMPS = ["PL", "FE", "HG", "BC", "BPC", "NEL", "CALZETTI_EXT", "SMC_EXT", "MW_EXT", "AGN_EXT", "LMC_EXT"]
-
-###############################################################################
+ACCEPTED_COMPS = ["PL", "FE", "HG", "BC", "BPC", "EL", "CALZETTI_EXT", "SMC_EXT", "MW_EXT", "AGN_EXT", "LMC_EXT"]
 
 def spamm(complist, inspectrum, redshift=0.0, mask=None, par_file=None, n_walkers=32, n_iterations=500, 
           outdir=None, picklefile=None, comp_params=None, parallel=False):
@@ -35,13 +30,15 @@ def spamm(complist, inspectrum, redshift=0.0, mask=None, par_file=None, n_walker
     Runs the SPAMM analysis on a given spectrum with specified components.
 
     Args:
-        complist (list):
+        complist (list): 
             A list of components to model. Accepted component names are: 
-            "PL", "FE", "HG", "BC", "BPC", "NEL", "CALZETTI_EXT", "SMC_EXT", 
+            "PL", "FE", "HG", "BC", "BPC", "CALZETTI_EXT", "SMC_EXT", 
             "MW_EXT", "AGN_EXT", "LMC_EXT".
         inspectrum (spamm.Spectrum, specutils.Spectrum1D, or tuple): 
             The input spectrum to model. If a tuple, it should be in the format 
             ((wavelength,), (flux,)) or ((wavelength,), (flux,), (flux_error,)).
+        redshift (float, optional): 
+            The redshift value to apply to the spectrum. Default is 0.0.
         mask (numpy.ndarray, list of bools, or list of tuples/lists, optional): 
             A mask for the input spectrum. If a boolean array or list, `True` 
             indicates a valid data point and `False` a point to be ignored. 
@@ -50,9 +47,9 @@ def spamm(complist, inspectrum, redshift=0.0, mask=None, par_file=None, n_walker
         par_file (str, optional): 
             Path to the parameters file. If None, default parameters are used.
         n_walkers (int, optional): 
-            Number of walkers to use in the MCMC analysis.
+            Number of walkers to use in the MCMC analysis. Default is 32.
         n_iterations (int, optional): 
-            Number of iterations for each MCMC walker.
+            Number of iterations for each MCMC walker. Default is 500.
         outdir (str, optional): 
             Directory to save output files. If None, a directory is created based on the current run time.
         picklefile (str, optional): 
@@ -61,6 +58,8 @@ def spamm(complist, inspectrum, redshift=0.0, mask=None, par_file=None, n_walker
             Known values of component parameters. Contains the known values of component parameters, 
             with keys defined in each of the individual run scripts (run_XX.py).
             If None, the actual values of parameters will not be plotted.
+        parallel (bool, optional): 
+            Whether to run the MCMC analysis in parallel. Default is False.
 
     Returns:
         dict: 
@@ -69,6 +68,8 @@ def spamm(complist, inspectrum, redshift=0.0, mask=None, par_file=None, n_walker
     Raises:
         ValueError: 
             If an invalid component is specified in `complist`.
+        TypeError: 
+            If the mask is not a boolean array/list or a list of tuples/lists.
     """
     start_time = timeit.default_timer()
 
@@ -115,35 +116,6 @@ def spamm(complist, inspectrum, redshift=0.0, mask=None, par_file=None, n_walker
     # Initialize the model
     model = Model()
 
-    # Add each component to the model's components if it should be included in the model.
-    if components["PL"]:
-        is_broken = comp_params.get("broken_pl", False)
-        nuclear_comp = NuclearContinuumComponent(pars=pars["nuclear_continuum"], broken=is_broken)
-        model.components.append(nuclear_comp)
-
-    if components["FE"]:
-        fe_comp = FeComponent(pars=pars["fe_forest"])
-        model.components.append(fe_comp)
-
-    if components["HG"]:
-        host_galaxy_comp = HostGalaxyComponent(pars=pars["host_galaxy"])
-        model.components.append(host_galaxy_comp)
-
-    if components["BC"] or components["BPC"]:
-        balmer_comp = BalmerCombined(pars=pars["balmer_continuum"],
-                                     BalmerContinuum=components["BC"],
-                                     BalmerPseudocContinuum=components["BPC"])
-        model.components.append(balmer_comp)
-
-    if components["NEL"]:
-        narrow_comp = NarrowComponent(pars=pars["narrow_lines"])
-        model.components.append(narrow_comp)
-
-    # TODO: MW_ext, AGN_ext etc. are all undefined?
-    #if components["CALZETTI_EXT"] or components["SMC_EXT"] or components["MW_EXT"] or components["AGN_EXT"] or components["LMC_EXT"]:
-    #    ext_comp = Extinction(MW=MW_ext, AGN=AGN_ext, LMC=LMC_ext, SMC=SMC_ext, Calzetti=Calzetti_ext)
-    #    model.components.append(ext_comp)
-
     if mask is not None:
         # Check if mask is a boolean array/list
         if (isinstance(mask, np.ndarray) or isinstance(mask, list)) and all(isinstance(x, bool) for x in mask):
@@ -162,6 +134,35 @@ def spamm(complist, inspectrum, redshift=0.0, mask=None, par_file=None, n_walker
             raise ValueError(f"Flux array length ({len(flux)}) and mask array length ({len(boolmask)}) must be the same.")
     else:
         boolmask = None
+
+    # Add each component to the model's components if it should be included in the model.
+    if components["PL"]:
+        is_broken = comp_params.get("broken_pl", False)
+        pl_comp = PowerLawComponent(pars=pars["power_law"], broken=is_broken)
+        model.components.append(pl_comp)
+
+    if components["FE"]:
+        fe_comp = FeComponent(pars=pars["fe_forest"])
+        model.components.append(fe_comp)
+
+    if components["HG"]:
+        host_galaxy_comp = HostGalaxyComponent(pars=pars["host_galaxy"])
+        model.components.append(host_galaxy_comp)
+
+    if components["BC"] or components["BPC"]:
+        balmer_comp = BalmerCombined(pars=pars["balmer_continuum"],
+                                     BalmerContinuum=components["BC"],
+                                     BalmerPseudocContinuum=components["BPC"])
+        model.components.append(balmer_comp)
+
+    if components["EL"]:
+        emission_comp = EmissionComponent(pars=pars["emission_lines"], wl=wl, mask=mask)
+        model.components.append(emission_comp)
+
+    # TODO: MW_ext, AGN_ext etc. are all undefined?
+    #if components["CALZETTI_EXT"] or components["SMC_EXT"] or components["MW_EXT"] or components["AGN_EXT"] or components["LMC_EXT"]:
+    #    ext_comp = Extinction(MW=MW_ext, AGN=AGN_ext, LMC=LMC_ext, SMC=SMC_ext, Calzetti=Calzetti_ext)
+    #    model.components.append(ext_comp)
 
     model.data_spectrum = spectrum
     model.mask = boolmask
@@ -203,7 +204,7 @@ def spamm(complist, inspectrum, redshift=0.0, mask=None, par_file=None, n_walker
 
     # If the output directory does not exist, create it
     if not os.path.exists(outdir):
-        os.makedirs(outdir)
+        os.makedirs(outdir) 
 
     # Create the full path for the pickle file
     pname = os.path.join(outdir, picklefile)
@@ -214,7 +215,7 @@ def spamm(complist, inspectrum, redshift=0.0, mask=None, par_file=None, n_walker
         print(f"[SPAMM]: Saved pickle file: {pname}")
 
     # Generate plots from the saved pickle file
-    make_plots_from_pickle(pname, outdir)
+    # make_plots_from_pickle(pname, outdir)
 
     # Calculate and print the total execution time
     end_time = timeit.default_timer()

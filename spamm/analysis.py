@@ -247,12 +247,12 @@ def make_all_plots(S):
 
     # Make a PDF (the plot kind!) with the histogram for each parameter a
     # different page in the PDF for detailed analysis.
-    #plot_posteriors_pdf(S)
+    plot_posteriors_pdf(S)
     
     # Make a gif of the model spectrum as a function of iteration,
     # or if last is True, only save the last model spectrum.
-    if S.gif is True:
-        plot_models(S)
+    # if S.gif is True:
+    #     plot_models(S)
 
 ###############################################################################
 
