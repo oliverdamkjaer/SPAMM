@@ -1,3 +1,100 @@
+
+
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+
+	
+
 # !!!!!!!!!!!!!!!!!!!!!!!
 # !!!!    WARNING    !!!!
 # !!!!!!!!!!!!!!!!!!!!!!!
@@ -12,14 +109,17 @@ global:
     flux_unit: "erg cm-2 s-1 AA-1"
     wl_unit: "AA"
 
-narrow_lines:
+emission_lines:
     boxcar_width: 5
-    width_min: 10. # km/s
-    width_max: 700. # km/s
-    amp_min: 0.
-    amp_max: "max_flux" #max_flux or fnw
-    center_size: 5
-    wavelengths: {"CIV_1549": 1549.05, "OIII]_1664": 1664.15, "AlII_1670": 1670.79, "NIII]_1750": 1750.46, "SiII_1813": 1813.98, "NII]_2141": 2141.36, "CII]_2326": 2326.58, "[OIII]_5006": 5006.84, "[NI]_5199": 5199.82, "[CaV]_5309": 5309.18, "[OI]_6363": 6363.78, "OI_8446": 8446.5, "[SIII]_9086": 9068.9}
+    narrow_width_min: 100. # km/s
+    narrow_width_max: 1000. # km/s
+    broad_width_min: 1200. # km/s
+    broad_width_max: 10000. # km/s
+    narrow_amp_min: 0.
+    narrow_amp_max: "max_flux"
+    broad_amp_min: 0
+    broad_amp_max: "max_flux"
+    loc_size: 15
 
 ## Host Galaxy ##
 host_galaxy:
@@ -41,7 +141,7 @@ boxcar_width: 5
 power_law:
     boxcar_width: 5
     broken_pl: False
-    pl_slope_min: -3.
+    pl_slope_min: -3
     pl_slope_max: 3.
     pl_norm_min: 0.
     pl_norm_max: "max_flux"
@@ -68,7 +168,7 @@ balmer_continuum:
 
 
 ## Fe Component ##
-fe_component:
+fe_forest:
     boxcar_width: 10
     fe_templates: "../Data/FeModels"
     fe_template_width: 900. #km/s
@@ -87,3 +187,4 @@ testing:
     wl_min: 1000
     wl_max: 10000
     wl_step: 0.5
+

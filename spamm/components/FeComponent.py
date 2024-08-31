@@ -310,7 +310,7 @@ class FeComponent(Component):
 #                self.log_fe[i].spectral_axis = self.log_fe[i].spectral_axis[:-1]
 #            log_conv_fe_flux = fftwconvolve_1d(self.log_fe[i].flux, kernel)
         
-            log_conv_fe_flux = np.convolve(self.log_fe[i].flux, kernel,mode="same")
+            log_conv_fe_flux = np.convolve(self.log_fe[i].flux, kernel, mode="same")
 #TODO need to check Spectrum.bin_spectrum()
             # Shift spectrum back into linear space.
             # the left and right statements just set the flux value 
