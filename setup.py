@@ -6,7 +6,7 @@ HERE = pathlib.Path(__file__).parent
 
 setup(
     name='spamm',
-    version='0.0.1',
+    version='0.1',
     description='AGN spectral Bayesian decomposition',
     url='https://github.com/oliverdamkjaer/SPAMM',  # Replace with your project's URL
     author='Oliver Damkjær',  # Replace with your name
