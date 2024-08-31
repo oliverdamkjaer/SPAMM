@@ -7,7 +7,7 @@ __pycache__/
 env/
 develop-eggs/
 dist/
-build/
+/build
 downloads/
 eggs/
 .eggs/
@@ -21,7 +21,7 @@ var/
 *.egg
 
 # Sphinx documentation
-# docs/build/
+docs/build/
 docs/source/_static
 docs/source/_templates
 
