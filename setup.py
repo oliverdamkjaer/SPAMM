@@ -8,9 +8,9 @@ setup(
     name='spamm',
     version='0.1',
     description='AGN spectral Bayesian decomposition',
-    url='https://github.com/oliverdamkjaer/SPAMM',  # Replace with your project's URL
-    author='Oliver Damkjær',  # Replace with your name
-    author_email='od.damkjaer@gmail.com',  # Replace with your email
+    url='https://github.com/oliverdamkjaer/SPAMM',
+    author='Oliver Damkjær',
+    author_email='od.damkjaer@gmail.com',
     keywords=['astronomy'],
     classifiers=[
         'Programming Language :: Python',
